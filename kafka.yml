@@ -1,0 +1,29 @@
+---
+
+- hosts: all 
+  user: vagrant
+  sudo: yes
+
+  tasks:
+
+    - name: Add the Confluent Apt Key if not present
+      apt_key: url=http://packages.confluent.io/deb/1.0/archive.key state=present
+
+    - name: Add the Confluent repository to the sources list
+      apt_repository: repo='deb [arch=all] http://packages.confluent.io/deb/1.0 stable main' state=present
+
+    - name: Install Confluent
+      action: apt pkg={{ item }} state=installed update_cache=yes
+      with_items:
+        - build-essential
+        - confluent-platform-2.10.4
+        - openjdk-7-jdk
+
+    - name: Start ZooKeeper
+      shell: zookeeper-server-start -daemon /etc/kafka/zookeeper.properties
+
+    - name: Start Kafka
+      shell: kafka-server-start -daemon /etc/kafka/server.properties
+
+#    - name: Start Schema Registry
+#      shell: schema-registry-start -daemon /etc/schema-registry/schema-registry.properties
